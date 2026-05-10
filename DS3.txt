@@ -22,7 +22,7 @@ from sklearn.datasets import load_iris
 
 # Change filename according to exam
 
-df = pd.read_csv("data.csv")
+df = pd.read_csv("titanic.csv")
 df
 
 # =========================================================
@@ -170,9 +170,9 @@ print(df.isnull().sum())
 # EXAMPLE 2
 # ---------------------------------------------------------
 
-# print(df.groupby('Department')['Marks'].mean())
-income_list = grouped.apply(list)
-income_list
+grouped = df.groupby('Sex')['Fare'].apply(list)
+
+print(grouped)
 
 # =========================================================
 # STEP 16 : IRIS DATASET EXAMPLE
@@ -190,6 +190,12 @@ print(iris_df.head())
 # Add species labels
 
 iris_df['species'] = iris.target
+# Convert numeric labels to names
+iris_df['species'] = iris_df['species'].map({
+    0: 'setosa',
+    1: 'versicolor',
+    2: 'virginica'
+})
 
 # =========================================================
 # STEP 17 : GROUP BY SPECIES
