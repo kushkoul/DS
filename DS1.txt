@@ -13,7 +13,7 @@ import pandas as pd
 # numpy -> used for numerical operations
 import numpy as np
 
-# LabelEncoder -> converts categorical text into numbers
+# LabelEncoder -> converts categorical text into numbers.
 from sklearn.preprocessing import LabelEncoder
 
 # MinMaxScaler -> used for normalization
@@ -231,6 +231,7 @@ print(df.isnull().sum())
 
 # In that case:
 # use One-Hot Encoding
+#df = pd.get_dummies(df)
 
 le = LabelEncoder()
 
