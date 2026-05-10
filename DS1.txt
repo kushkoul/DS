@@ -1,0 +1,282 @@
+# =========================================================
+# ASSIGNMENT 1 : DATA WRANGLING I
+# UNIVERSAL / GENERALIZED PRACTICAL CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+# pandas -> used for handling datasets
+import pandas as pd
+
+# numpy -> used for numerical operations
+import numpy as np
+
+# LabelEncoder -> converts categorical text into numbers
+from sklearn.preprocessing import LabelEncoder
+
+# MinMaxScaler -> used for normalization
+from sklearn.preprocessing import MinMaxScaler
+
+# =========================================================
+# STEP 2 : LOAD DATASET
+# =========================================================
+
+# IMPORTANT:
+# Change filename according to practical exam dataset
+
+# Examples:
+# titanic.csv
+# students.csv
+# housing.csv
+# employee.csv
+
+df = pd.read_csv("data.csv")
+df
+df.drop('PassengerId', axis=1, inplace=True)
+
+# =========================================================
+# STEP 3 : DISPLAY FIRST 5 ROWS
+# =========================================================
+
+# head() helps us understand:
+# 1. Column names
+# 2. Data types visually
+# 3. Dataset structure
+
+print("\nFIRST 5 ROWS OF DATASET")
+print(df.head())
+
+# =========================================================
+# STEP 4 : DISPLAY BASIC INFORMATION
+# =========================================================
+
+# info() gives:
+# - total rows
+# - total columns
+# - non-null values
+# - datatype of every column
+
+print("\nDATASET INFORMATION")
+print(df.info())
+
+# =========================================================
+# STEP 5 : CHECK DIMENSIONS OF DATASET
+# =========================================================
+
+# shape gives:
+# (number_of_rows, number_of_columns)
+
+print("\nSHAPE OF DATASET")
+print(df.shape)
+
+# =========================================================
+# STEP 6 : DISPLAY COLUMN NAMES
+# =========================================================
+
+# Helps identify target column and feature columns
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 7 : CHECK DATA TYPES
+# =========================================================
+
+# Very important in preprocessing
+
+# Common datatypes:
+# int64   -> integer values
+# float64 -> decimal values
+# object  -> categorical/text data
+
+print("\nDATA TYPES")
+print(df.dtypes)
+
+# =========================================================
+# STEP 8 : DESCRIPTIVE STATISTICS
+# =========================================================
+
+# describe() works only on numeric columns
+
+# Gives:
+# mean
+# standard deviation
+# minimum
+# maximum
+# quartiles
+
+print("\nSTATISTICAL SUMMARY")
+print(df.describe())
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+
+# =========================================================
+# STEP 9 : CHECK MISSING VALUES
+# =========================================================
+
+# isnull() detects missing values
+# sum() counts total missing values
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 10 : IDENTIFY NUMERIC COLUMNS
+# =========================================================
+
+# Numeric columns usually contain:
+# age
+# salary
+# marks
+# price
+# etc.
+
+# include=np.number automatically selects numeric columns
+
+num_cols = df.select_dtypes(include=np.number).columns
+
+print("\nNUMERIC COLUMNS")
+print(num_cols)
+
+# =========================================================
+# STEP 11 : IDENTIFY CATEGORICAL COLUMNS
+# =========================================================
+
+# object datatype usually means text/categorical data
+
+# Examples:
+# Male/Female
+# City names
+# Department names
+
+cat_cols = df.select_dtypes(include='object').columns
+
+print("\nCATEGORICAL COLUMNS")
+print(cat_cols)
+
+# =========================================================
+# STEP 12 : HANDLE MISSING VALUES
+# =========================================================
+
+# ---------------------------------------------------------
+# PART A : HANDLE NUMERIC MISSING VALUES
+# ---------------------------------------------------------
+
+# WHY USE MEAN?
+# Mean is commonly used for numeric data
+
+# USE MEAN WHEN:
+# - data is numeric
+# - data is fairly normally distributed
+
+# DO NOT USE MEAN WHEN:
+# - dataset contains extreme outliers
+
+# IN THAT CASE:
+# use median instead
+
+for col in num_cols:
+
+    # fillna() replaces missing values
+
+    df[col] = df[col].fillna(df[col].mean())
+
+# ---------------------------------------------------------
+# PART B : HANDLE CATEGORICAL MISSING VALUES
+# ---------------------------------------------------------
+
+# WHY USE MODE?
+# Mode = most frequent value
+
+# Used for text/categorical columns
+
+for col in cat_cols:
+
+    df[col] = df[col].fillna(df[col].mode()[0])
+
+# =========================================================
+# STEP 13 : VERIFY MISSING VALUES REMOVED
+# =========================================================
+
+print("\nMISSING VALUES AFTER CLEANING")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 14 : LABEL ENCODING
+# =========================================================
+
+# WHY ENCODING?
+# Machine learning models understand numbers better than text
+
+# Example:
+# Male -> 0
+# Female -> 1
+
+# USE LABEL ENCODING WHEN:
+# categorical values are simple labels
+
+# Examples:
+# yes/no
+# male/female
+# pass/fail
+
+# DO NOT USE LABEL ENCODING WHEN:
+# categories have NO order and many unique values
+
+# Example:
+# cities
+# countries
+
+# In that case:
+# use One-Hot Encoding
+
+le = LabelEncoder()
+
+for col in cat_cols:
+
+    df[col] = le.fit_transform(df[col])
+
+print("\nDATASET AFTER LABEL ENCODING")
+print(df.head())
+
+# =========================================================
+# STEP 15 : NORMALIZATION
+# =========================================================
+
+# WHY NORMALIZATION?
+
+# Different columns may have different ranges
+
+# Example:
+# Age -> 20 to 60
+# Salary -> 10000 to 500000
+
+# Large values can dominate smaller values
+
+# Normalization scales values between 0 and 1
+
+# USE NORMALIZATION WHEN:
+# - dataset contains different ranges
+# - machine learning models are used
+
+# DO NOT ALWAYS NEED NORMALIZATION:
+# for tree-based algorithms sometimes not required
+
+scaler = MinMaxScaler()
+
+# Apply normalization only on numeric columns
+
+df[num_cols] = scaler.fit_transform(df[num_cols])
+
+print("\nNORMALIZED DATASET")
+print(df.head())
+
+# =========================================================
+# STEP 16 : FINAL DATASET INFORMATION
+# =========================================================
+
+print("\nFINAL DATASET INFO")
+print(df.info())
+

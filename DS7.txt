@@ -1,0 +1,211 @@
+df.drop('PassengerId', axis=1, inplace=True)
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+# =========================================================
+# ASSIGNMENT 7 : TEXT ANALYTICS / NLP
+# FINAL MASTER PRACTICAL CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+# nltk -> Natural Language Toolkit
+
+import nltk
+
+# Tokenization
+from nltk.tokenize import word_tokenize
+
+# Stopwords
+from nltk.corpus import stopwords
+
+# POS tagging
+from nltk import pos_tag
+
+# Stemming
+from nltk.stem import PorterStemmer
+
+# Lemmatization
+from nltk.stem import WordNetLemmatizer
+
+# TF-IDF
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# =========================================================
+# STEP 2 : DOWNLOAD REQUIRED NLTK RESOURCES
+# =========================================================
+
+# These downloads may happen only first time
+
+nltk.download('punkt')
+
+nltk.download('stopwords')
+
+nltk.download('averaged_perceptron_tagger')
+
+nltk.download('wordnet')
+
+# =========================================================
+# STEP 3 : INPUT TEXT
+# =========================================================
+
+# You can change text according to practical
+
+text = """
+Data Science is an interdisciplinary field that uses scientific methods,
+algorithms and systems to extract knowledge from data.
+"""
+
+print("\nORIGINAL TEXT")
+print(text)
+
+# =========================================================
+# STEP 4 : TOKENIZATION
+# =========================================================
+
+# Tokenization breaks sentence into words
+
+tokens = word_tokenize(text)
+
+print("\nTOKENS")
+print(tokens)
+
+# =========================================================
+# STEP 5 : REMOVE PUNCTUATION
+# =========================================================
+
+# Keep only alphabetic words
+
+words = [word for word in tokens if word.isalpha()]
+
+print("\nWORDS AFTER REMOVING PUNCTUATION")
+print(words)
+
+# =========================================================
+# STEP 6 : CONVERT TO LOWERCASE
+# =========================================================
+
+# WHY LOWERCASE?
+
+# 'Data' and 'data'
+# should be treated same
+
+words = [word.lower() for word in words]
+
+print("\nLOWERCASE WORDS")
+print(words)
+
+# =========================================================
+# STEP 7 : REMOVE STOPWORDS
+# =========================================================
+
+# stopwords.words('english')
+# contains common unnecessary words
+
+stop_words = set(stopwords.words('english'))
+
+filtered_words = [
+
+    word for word in words
+
+    if word not in stop_words
+]
+
+print("\nWORDS AFTER STOPWORD REMOVAL")
+print(filtered_words)
+
+# =========================================================
+# STEP 8 : POS TAGGING
+# =========================================================
+
+# POS = Part Of Speech
+
+# Example:
+# NN -> noun
+# VB -> verb
+# JJ -> adjective
+
+pos_words = pos_tag(filtered_words)
+
+print("\nPART OF SPEECH TAGGING")
+print(pos_words)
+
+# =========================================================
+# STEP 9 : STEMMING
+# =========================================================
+
+# Stemming cuts words into root form
+
+# May not always produce meaningful English word
+
+stemmer = PorterStemmer()
+
+stemmed_words = [
+
+    stemmer.stem(word)
+
+    for word in filtered_words
+]
+
+print("\nSTEMMED WORDS")
+print(stemmed_words)
+
+# =========================================================
+# STEP 10 : LEMMATIZATION
+# =========================================================
+
+# Lemmatization gives proper meaningful root word
+
+lemmatizer = WordNetLemmatizer()
+
+lemmatized_words = [
+
+    lemmatizer.lemmatize(word)
+
+    for word in filtered_words
+]
+
+print("\nLEMMATIZED WORDS")
+print(lemmatized_words)
+
+# =========================================================
+# STEP 11 : TF-IDF
+# =========================================================
+
+# Sample documents
+
+documents = [
+
+    "Data Science is amazing",
+
+    "Machine Learning is part of Data Science",
+
+    "Python is used in Data Science"
+]
+
+# Create TF-IDF vectorizer
+
+vectorizer = TfidfVectorizer()
+
+# Convert text into TF-IDF matrix
+
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+# =========================================================
+# STEP 12 : DISPLAY TF-IDF MATRIX
+# =========================================================
+
+print("\nTF-IDF MATRIX")
+
+print(tfidf_matrix.toarray())
+
+# =========================================================
+# STEP 13 : DISPLAY FEATURE NAMES
+# =========================================================
+
+# Shows words used as features
+
+print("\nFEATURE NAMES")
+
+print(vectorizer.get_feature_names_out())

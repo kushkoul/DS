@@ -1,0 +1,245 @@
+df.drop('PassengerId', axis=1, inplace=True)
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+# =========================================================
+# ASSIGNMENT 8 & 9 : DATA VISUALIZATION
+# FINAL MASTER PRACTICAL CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+# seaborn -> advanced visualization
+import seaborn as sns
+
+# matplotlib -> graph plotting
+import matplotlib.pyplot as plt
+
+# pandas -> dataset handling
+import pandas as pd
+
+# numpy -> numerical operations
+import numpy as np
+
+# =========================================================
+# STEP 2 : LOAD DATASET
+# =========================================================
+
+# ---------------------------------------------------------
+# OPTION 1 : LOAD TITANIC DATASET
+# ---------------------------------------------------------
+
+# Very common in practical exams
+
+df = sns.load_dataset('titanic')
+df
+
+# ---------------------------------------------------------
+# OPTION 2 : LOAD CUSTOM DATASET
+# ---------------------------------------------------------
+
+# Uncomment if external dataset given
+
+# df = pd.read_csv("data.csv")
+
+# =========================================================
+# STEP 3 : DISPLAY BASIC INFORMATION
+# =========================================================
+
+print("\nFIRST 5 ROWS")
+print(df.head())
+
+print("\nDATASET INFO")
+print(df.info())
+
+print("\nDATASET SHAPE")
+print(df.shape)
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 4 : CHECK MISSING VALUES
+# =========================================================
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 5 : SELECT NUMERIC COLUMNS
+# =========================================================
+
+num_cols = df.select_dtypes(include=np.number).columns
+
+print("\nNUMERIC COLUMNS")
+print(num_cols)
+
+# =========================================================
+# STEP 6 : HISTOGRAM
+# =========================================================
+
+# WHY HISTOGRAM?
+
+# Histogram shows:
+# - frequency distribution
+# - skewness
+# - spread of data
+
+# IMPORTANT:
+# Change column according to dataset
+
+# Example:
+# age
+# fare
+# salary
+# marks
+
+plt.figure(figsize=(8,5))
+
+plt.hist(df['fare'].dropna(), bins=20)
+
+# dropna() removes missing values temporarily
+
+plt.xlabel("Fare")
+
+plt.ylabel("Frequency")
+
+plt.title("Fare Distribution Histogram")
+
+plt.show()
+
+# =========================================================
+# STEP 7 : KDE DISTRIBUTION PLOT
+# =========================================================
+
+# KDE = Kernel Density Estimation
+
+# Gives smooth distribution curve
+
+plt.figure(figsize=(8,5))
+
+sns.kdeplot(df['fare'].dropna())
+
+plt.title("Fare Density Distribution")
+
+plt.show()
+
+# =========================================================
+# STEP 8 : COUNTPLOT
+# =========================================================
+
+# Countplot used for categorical data
+
+# Example:
+# male/female count
+# survived/not survived
+
+plt.figure(figsize=(6,4))
+
+sns.countplot(x='sex', data=df)
+
+plt.title("Gender Count")
+
+plt.show()
+
+# =========================================================
+# STEP 9 : BOXPLOT
+# =========================================================
+
+# WHY BOXPLOT?
+
+# Boxplot shows:
+# - median
+# - quartiles
+# - outliers
+# - spread
+
+# Useful for comparing distributions
+
+plt.figure(figsize=(8,5))
+
+sns.boxplot(x='sex', y='age', data=df)
+
+plt.title("Age Distribution by Gender")
+
+plt.show()
+
+# =========================================================
+# STEP 10 : BOXPLOT WITH HUE
+# =========================================================
+
+# hue creates subgroup comparison
+
+# Here:
+# compare survival based on gender and age
+
+plt.figure(figsize=(8,5))
+
+sns.boxplot(
+    x='sex',
+    y='age',
+    hue='survived',
+    data=df
+)
+
+plt.title("Age Distribution by Gender and Survival")
+
+plt.show()
+
+# =========================================================
+# STEP 11 : SCATTER PLOT
+# =========================================================
+
+# Scatter plot shows relationship
+# between two numeric variables
+
+plt.figure(figsize=(8,5))
+
+plt.scatter(df['age'], df['fare'])
+
+plt.xlabel("Age")
+
+plt.ylabel("Fare")
+
+plt.title("Age vs Fare")
+
+plt.show()
+
+# =========================================================
+# STEP 12 : PAIRPLOT
+# =========================================================
+
+# pairplot automatically creates
+# multiple relationship graphs
+
+# Very impressive in viva
+
+sns.pairplot(df[['age', 'fare', 'pclass']].dropna())
+
+plt.show()
+
+# =========================================================
+# STEP 13 : HEATMAP
+# =========================================================
+
+# Heatmap shows correlation
+
+plt.figure(figsize=(10,8))
+
+sns.heatmap(df.corr(numeric_only=True), annot=True)
+
+plt.title("Correlation Heatmap")
+
+plt.show()
+
+# =========================================================
+# STEP 14 : OBSERVATIONS
+# =========================================================
+
+# Example observations:
+
+# 1. Fare distribution is right-skewed
+# 2. Outliers visible in age/fare
+# 3. Females show higher survival rate
+# 4. Age and fare show weak relationship

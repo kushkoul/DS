@@ -1,0 +1,217 @@
+df.drop('PassengerId', axis=1, inplace=True)
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+# =========================================================
+# ASSIGNMENT 3 : DESCRIPTIVE STATISTICS
+# UNIVERSAL / GENERALIZED PRACTICAL CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+import pandas as pd
+import numpy as np
+
+# Used for sample Iris dataset
+from sklearn.datasets import load_iris
+
+# =========================================================
+# STEP 2 : LOAD DATASET
+# =========================================================
+
+# Change filename according to exam
+
+df = pd.read_csv("data.csv")
+df
+
+# =========================================================
+# STEP 3 : DISPLAY DATASET
+# =========================================================
+
+print("\nFIRST 5 ROWS")
+print(df.head())
+
+# =========================================================
+# STEP 4 : BASIC INFORMATION
+# =========================================================
+
+print("\nDATASET INFO")
+print(df.info())
+
+print("\nSHAPE OF DATASET")
+print(df.shape)
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 5 : SELECT NUMERIC COLUMNS
+# =========================================================
+
+# Descriptive statistics mainly work on numeric columns
+
+num_cols = df.select_dtypes(include=np.number).columns
+
+print("\nNUMERIC COLUMNS")
+print(num_cols)
+
+# =========================================================
+# STEP 6 : CALCULATE MEAN
+# =========================================================
+
+# Mean = average value
+
+print("\nMEAN OF EACH NUMERIC COLUMN")
+print(df[num_cols].mean())
+
+# =========================================================
+# STEP 7 : CALCULATE MEDIAN
+# =========================================================
+
+# Median = middle value
+
+print("\nMEDIAN OF EACH NUMERIC COLUMN")
+print(df[num_cols].median())
+
+# =========================================================
+# STEP 8 : CALCULATE MODE
+# =========================================================
+
+# Mode = most frequent value
+
+print("\nMODE OF EACH COLUMN")
+
+# mode() may return multiple rows
+print(df.mode())
+
+# =========================================================
+# STEP 9 : MINIMUM VALUES
+# =========================================================
+
+print("\nMINIMUM VALUES")
+print(df[num_cols].min())
+
+# =========================================================
+# STEP 10 : MAXIMUM VALUES
+# =========================================================
+
+print("\nMAXIMUM VALUES")
+print(df[num_cols].max())
+
+# =========================================================
+# STEP 11 : STANDARD DEVIATION
+# =========================================================
+
+# std() measures spread of data
+
+print("\nSTANDARD DEVIATION")
+print(df[num_cols].std())
+
+# =========================================================
+# STEP 12 : VARIANCE
+# =========================================================
+
+# variance = square of standard deviation
+
+print("\nVARIANCE")
+print(df[num_cols].var())
+
+# =========================================================
+# STEP 13 : COMPLETE STATISTICAL SUMMARY
+# =========================================================
+
+# describe() automatically gives:
+# count
+# mean
+# std
+# min
+# quartiles
+# max
+
+print("\nDESCRIPTIVE STATISTICAL SUMMARY")
+print(df.describe())
+
+# =========================================================
+# STEP 14 : CHECK NULL VALUES
+# =========================================================
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 15 : GROUPING (VERY IMPORTANT)
+# =========================================================
+
+# groupby() is used when dataset contains categories
+
+# Examples:
+# Gender
+# Department
+# Species
+# Survived
+
+# IMPORTANT:
+# Change column names according to dataset
+
+# ---------------------------------------------------------
+# EXAMPLE 1
+# ---------------------------------------------------------
+
+# Uncomment and modify according to dataset
+
+# print(df.groupby('Gender')['Salary'].mean())
+
+# Meaning:
+# Group data by Gender
+# Then calculate average Salary
+
+# ---------------------------------------------------------
+# EXAMPLE 2
+# ---------------------------------------------------------
+
+# print(df.groupby('Department')['Marks'].mean())
+income_list = grouped.apply(list)
+income_list
+
+# =========================================================
+# STEP 16 : IRIS DATASET EXAMPLE
+# =========================================================
+
+# Many colleges use Iris dataset in practicals
+
+iris = load_iris(as_frame=True)
+
+iris_df = iris.frame
+
+print("\nIRIS DATASET")
+print(iris_df.head())
+
+# Add species labels
+
+iris_df['species'] = iris.target
+
+# =========================================================
+# STEP 17 : GROUP BY SPECIES
+# =========================================================
+
+print("\nMEAN GROUPED BY SPECIES")
+print(iris_df.groupby('species').mean())
+
+# =========================================================
+# STEP 18 : STANDARD DEVIATION GROUPED BY SPECIES
+# =========================================================
+
+print("\nSTANDARD DEVIATION GROUPED BY SPECIES")
+print(iris_df.groupby('species').std())
+
+# =========================================================
+# STEP 19 : OBSERVATIONS
+# =========================================================
+
+# You can write observations like:
+
+# 1. Which group has highest mean
+# 2. Which column has highest variation
+# 3. Which feature is most spread
+# 4. Presence of missing values

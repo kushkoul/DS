@@ -1,0 +1,339 @@
+df.drop('PassengerId', axis=1, inplace=True)
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+# =========================================================
+# ASSIGNMENT 6 : NAIVE BAYES CLASSIFICATION
+# FINAL MASTER PRACTICAL CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+# pandas -> dataset handling
+import pandas as pd
+
+# numpy -> numerical operations
+import numpy as np
+
+# visualization libraries
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# train_test_split -> divide dataset
+from sklearn.model_selection import train_test_split
+
+# Gaussian Naive Bayes model
+from sklearn.naive_bayes import GaussianNB
+
+# evaluation metrics
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+
+# sample Iris dataset
+from sklearn.datasets import load_iris
+
+# =========================================================
+# STEP 2 : LOAD DATASET
+# =========================================================
+
+# ---------------------------------------------------------
+# OPTION 1 : LOAD YOUR OWN DATASET
+# ---------------------------------------------------------
+
+# Uncomment when using external dataset
+
+# df = pd.read_csv("data.csv")
+df
+
+# ---------------------------------------------------------
+# OPTION 2 : LOAD IRIS DATASET
+# ---------------------------------------------------------
+
+# Very common in practical exams
+
+iris = load_iris(as_frame=True)
+
+df = iris.frame
+
+# =========================================================
+# DISPLAY CLASS LABELS
+# =========================================================
+
+# target_names contains actual flower names
+
+print("\nCLASS LABELS IN IRIS DATASET")
+
+for i, name in enumerate(iris.target_names):
+
+    print(f"{i} --> {name}")
+
+# =========================================================
+# STEP 3 : DISPLAY BASIC INFORMATION
+# =========================================================
+
+print("\nFIRST 5 ROWS")
+print(df.head())
+
+print("\nDATASET INFO")
+print(df.info())
+
+print("\nDATASET SHAPE")
+print(df.shape)
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 4 : CHECK MISSING VALUES
+# =========================================================
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 5 : HANDLE MISSING VALUES
+# =========================================================
+
+# Select numeric columns
+
+num_cols = df.select_dtypes(include=np.number).columns
+
+# Fill missing numeric values with mean
+
+for col in num_cols:
+
+    df[col] = df[col].fillna(df[col].mean())
+
+# =========================================================
+# STEP 6 : HANDLE CATEGORICAL DATA
+# =========================================================
+
+# Convert text columns into numeric format if needed
+
+df = pd.get_dummies(df)
+
+# =========================================================
+# STEP 7 : DEFINE TARGET COLUMN
+# =========================================================
+
+# IMPORTANT:
+# Change target column according to dataset
+
+# Examples:
+# target
+# Purchased
+# Survived
+# Outcome
+
+target = "target"
+
+# =========================================================
+# STEP 8 : SEPARATE FEATURES AND TARGET
+# =========================================================
+
+X = df.drop(target, axis=1)
+
+y = df[target]
+
+# =========================================================
+# STEP 9 : VISUALIZATION SECTION
+# =========================================================
+
+# ---------------------------------------------------------
+# VISUALIZATION 1 : CLASS DISTRIBUTION
+# ---------------------------------------------------------
+
+plt.figure(figsize=(6,4))
+
+sns.countplot(x=y)
+
+plt.title("Target Class Distribution")
+
+plt.show()
+
+# ---------------------------------------------------------
+# VISUALIZATION 2 : CORRELATION HEATMAP
+# ---------------------------------------------------------
+
+plt.figure(figsize=(10,8))
+
+sns.heatmap(df.corr(), annot=True)
+
+plt.title("Correlation Heatmap")
+
+plt.show()
+
+# ---------------------------------------------------------
+# VISUALIZATION 3 : SCATTER PLOT
+# ---------------------------------------------------------
+
+# Select first feature automatically
+
+feature_col = X.columns[0]
+
+plt.figure(figsize=(6,4))
+
+plt.scatter(df[feature_col], y)
+
+plt.xlabel(feature_col)
+
+plt.ylabel(target)
+
+plt.title(f"{feature_col} vs {target}")
+
+plt.show()
+
+# =========================================================
+# STEP 10 : TRAIN TEST SPLIT
+# =========================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+# =========================================================
+# STEP 11 : CREATE GAUSSIAN NAIVE BAYES MODEL
+# =========================================================
+
+model = GaussianNB()
+
+# =========================================================
+# STEP 12 : TRAIN MODEL
+# =========================================================
+
+# fit() teaches model patterns
+
+model.fit(X_train, y_train)
+
+# =========================================================
+# STEP 13 : MAKE PREDICTIONS
+# =========================================================
+
+y_pred = model.predict(X_test)
+
+# =========================================================
+# STEP 14 : ACTUAL VS PREDICTED VALUES
+# =========================================================
+
+comparison = pd.DataFrame({
+    "Actual": y_test,
+    "Predicted": y_pred
+})
+
+print("\nACTUAL VS PREDICTED")
+print(comparison.head())
+
+# =========================================================
+# STEP 15 : CONFUSION MATRIX
+# =========================================================
+
+cm = confusion_matrix(y_test, y_pred)
+
+print("\nCONFUSION MATRIX")
+print(cm)
+
+# =========================================================
+# STEP 16 : VISUALIZE CONFUSION MATRIX
+# =========================================================
+
+plt.figure(figsize=(6,4))
+
+sns.heatmap(cm, annot=True, fmt='d')
+
+plt.title("Confusion Matrix")
+
+plt.xlabel("Predicted")
+
+plt.ylabel("Actual")
+
+plt.show()
+
+# =========================================================
+# STEP 17 : MODEL ACCURACY
+# =========================================================
+
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\nMODEL ACCURACY")
+print(accuracy)
+
+# =========================================================
+# STEP 18 : CLASSIFICATION REPORT
+# =========================================================
+
+print("\nCLASSIFICATION REPORT")
+
+print(classification_report(y_test, y_pred))
+
+# =========================================================
+# STEP 19 : MANUAL TP TN FP FN
+# =========================================================
+
+# IMPORTANT:
+# Works properly mainly for binary classification
+
+# For multiclass datasets like Iris,
+# confusion matrix becomes larger
+
+# Only execute if binary classification exists
+
+if cm.shape == (2,2):
+
+    TP = cm[1][1]
+    TN = cm[0][0]
+    FP = cm[0][1]
+    FN = cm[1][0]
+
+    print("\nTRUE POSITIVE =", TP)
+    print("TRUE NEGATIVE =", TN)
+    print("FALSE POSITIVE =", FP)
+    print("FALSE NEGATIVE =", FN)
+
+# =========================================================
+# STEP 20 : USER INPUT PREDICTION
+# =========================================================
+
+print("\nENTER VALUES FOR PREDICTION")
+
+user_data = []
+
+for col in X.columns:
+
+    value = float(input(f"Enter value for {col}: "))
+
+    user_data.append(value)
+
+# Convert into DataFrame
+
+user_df = pd.DataFrame([user_data], columns=X.columns)
+
+# =========================================================
+# STEP 21 : PREDICT USER INPUT
+# =========================================================
+
+prediction = model.predict(user_df)
+
+# ---------------------------------------------------------
+# DISPLAY PREDICTED CLASS NUMBER
+# ---------------------------------------------------------
+
+print("\nPREDICTED CLASS NUMBER")
+
+print(prediction[0])
+
+# ---------------------------------------------------------
+# DISPLAY PREDICTED CLASS NAME
+# ---------------------------------------------------------
+
+# target_names contains flower labels
+
+class_names = iris.target_names
+
+print("\nPREDICTED FLOWER NAME")
+
+print(class_names[prediction[0]])

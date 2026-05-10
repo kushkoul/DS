@@ -1,0 +1,694 @@
+df.drop('PassengerId', axis=1, inplace=True)
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+# =========================================================
+# ASSIGNMENT 2 : DATA WRANGLING II
+# FINAL MASTER GENERALIZED CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+import pandas as pd
+import numpy as np
+
+# Visualization libraries
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# =========================================================
+# STEP 2 : LOAD DATASET
+# =========================================================
+
+# IMPORTANT:
+# Change filename according to practical exam
+
+df = pd.read_csv("data.csv")/df = sns.load_dataset('titanic')
+
+# =========================================================
+# STEP 3 : DISPLAY BASIC INFORMATION
+# =========================================================
+
+print("\nFIRST 5 ROWS")
+print(df.head())
+
+print("\nDATASET INFO")
+print(df.info())
+
+print("\nSHAPE OF DATASET")
+print(df.shape)
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 4 : CHECK MISSING VALUES
+# =========================================================
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 5 : HANDLE MISSING VALUES
+# GENERALIZED APPROACH
+# =========================================================
+
+# LOGIC:
+# --------------------------------------------
+# 1. Continuous numeric columns -> MEAN
+# 2. Binary/categorical columns -> MODE
+# 3. Text columns -> MODE
+# --------------------------------------------
+
+for col in df.columns:
+
+    # -----------------------------------------------------
+    # CHECK IF COLUMN IS NUMERIC
+    # -----------------------------------------------------
+
+    if df[col].dtype != 'object':
+
+        # Count unique values
+
+        unique_values = df[col].nunique()
+
+        # -------------------------------------------------
+        # BINARY / CATEGORICAL-LIKE COLUMN
+        # -------------------------------------------------
+
+        # Example:
+        # 0/1
+        # Yes/No encoded
+        # Small category counts
+
+        if unique_values <= 2:
+
+            # Use MODE
+
+            df[col] = df[col].fillna(
+                df[col].mode()[0]
+            )
+
+        # -------------------------------------------------
+        # CONTINUOUS NUMERIC COLUMN
+        # -------------------------------------------------
+
+        else:
+
+            # Use MEAN
+
+            df[col] = df[col].fillna(
+                df[col].mean()
+            )
+
+    # -----------------------------------------------------
+    # OBJECT/TEXT COLUMN
+    # -----------------------------------------------------
+
+    else:
+
+        # Use MODE
+
+        df[col] = df[col].fillna(
+            df[col].mode()[0]
+        )
+
+# =========================================================
+# STEP 6 : CHECK MISSING VALUES AGAIN
+# =========================================================
+
+print("\nMISSING VALUES AFTER HANDLING")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 7 : SELECT NUMERIC COLUMNS
+# FOR OUTLIER DETECTION
+# =========================================================
+
+# IMPORTANT:
+# Skip binary columns because:
+# IQR outlier detection is not meaningful for them
+
+num_cols = []
+
+for col in df.select_dtypes(include=np.number).columns:
+
+    # Include only columns having > 2 unique values
+
+    if df[col].nunique() > 2:
+
+        num_cols.append(col)
+
+print("\nNUMERIC COLUMNS USED FOR OUTLIER DETECTION")
+print(num_cols)
+
+# =========================================================
+# STEP 8 : OUTLIER DETECTION USING IQR METHOD
+# =========================================================
+
+for col in num_cols:
+
+    print(f"\nPROCESSING COLUMN : {col}")
+
+    # -----------------------------------------------------
+    # Q1 = 25th percentile
+    # -----------------------------------------------------
+
+    Q1 = df[col].quantile(0.25)
+
+    # -----------------------------------------------------
+    # Q3 = 75th percentile
+    # -----------------------------------------------------
+
+    Q3 = df[col].quantile(0.75)
+
+    # -----------------------------------------------------
+    # IQR CALCULATION
+    # -----------------------------------------------------
+
+    IQR = Q3 - Q1
+
+    print("Q1 =", Q1)
+    print("Q3 =", Q3)
+    print("IQR =", IQR)
+
+    # -----------------------------------------------------
+    # LOWER AND UPPER LIMITS
+    # -----------------------------------------------------
+
+    lower_limit = Q1 - 1.5 * IQR
+    upper_limit = Q3 + 1.5 * IQR
+
+    print("LOWER LIMIT =", lower_limit)
+    print("UPPER LIMIT =", upper_limit)
+
+    # -----------------------------------------------------
+    # DETECT OUTLIERS
+    # -----------------------------------------------------
+
+    outliers = df[
+        (df[col] < lower_limit) |
+        (df[col] > upper_limit)
+    ]
+
+    print("TOTAL OUTLIERS =", len(outliers))
+
+# =========================================================
+# STEP 9 : BOXPLOT VISUALIZATION
+# =========================================================
+
+# WHY BOXPLOT?
+
+# Boxplot shows:
+# - median
+# - quartiles
+# - outliers
+
+for col in num_cols:
+
+    plt.figure(figsize=(6,4))
+
+    sns.boxplot(y=df[col])
+
+    plt.title(f"Boxplot of {col}")
+
+    plt.show()
+
+# =========================================================
+# STEP 10 : REMOVE OUTLIERS
+# =========================================================
+
+# IMPORTANT:
+# Outlier removal is NOT always compulsory
+
+# Remove only meaningful extreme values
+
+for col in num_cols:
+
+    Q1 = df[col].quantile(0.25)
+
+    Q3 = df[col].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lower_limit = Q1 - 1.5 * IQR
+
+    upper_limit = Q3 + 1.5 * IQR
+
+    # Keep only normal values
+
+    df = df[
+        (df[col] >= lower_limit) &
+        (df[col] <= upper_limit)
+    ]
+
+print("\nSHAPE AFTER OUTLIER REMOVAL")
+print(df.shape)
+
+# =========================================================
+# STEP 11 : SELECT COLUMNS FOR TRANSFORMATION
+# =========================================================
+
+# IMPORTANT:
+# Apply transformation mainly on skewed columns
+
+# Example columns:
+# salary
+# price
+# crime rate
+# income
+
+# GENERALIZED APPROACH:
+# Transform all continuous numeric columns
+
+transform_cols = num_cols
+
+# =========================================================
+# STEP 12 : TRANSFORMATION WITH COMPARISON
+# =========================================================
+
+# WHY TRANSFORMATION?
+
+# Used to:
+# 1. reduce skewness
+# 2. normalize distribution
+# 3. reduce effect of large values
+
+for col in transform_cols:
+
+    # -----------------------------------------------------
+    # APPLY ONLY FOR POSITIVE VALUES
+    # -----------------------------------------------------
+
+    if (df[col] >= 0).all():
+
+        # -------------------------------------------------
+        # STORE ORIGINAL DATA
+        # -------------------------------------------------
+
+        original_data = df[col]
+
+        # -------------------------------------------------
+        # HISTOGRAM BEFORE TRANSFORMATION
+        # -------------------------------------------------
+
+        plt.figure(figsize=(6,4))
+
+        plt.hist(original_data, bins=20)
+
+        plt.title(f"BEFORE Transformation : {col}")
+
+        plt.xlabel(col)
+
+        plt.ylabel("Frequency")
+
+        plt.show()
+
+        # -------------------------------------------------
+        # APPLY LOG TRANSFORMATION
+        # -------------------------------------------------
+
+        # log1p() = log(1+x)
+        # avoids log(0) error
+
+        transformed_data = np.log1p(original_data)
+
+        # Replace original column
+
+        df[col] = transformed_data
+
+        # -------------------------------------------------
+        # HISTOGRAM AFTER TRANSFORMATION
+        # -------------------------------------------------
+
+        plt.figure(figsize=(6,4))
+
+        plt.hist(transformed_data, bins=20)
+
+        plt.title(f"AFTER Log Transformation : {col}")
+
+        plt.xlabel(col)
+
+        plt.ylabel("Frequency")
+
+        plt.show()
+
+# =========================================================
+# STEP 13 : FINAL DATASET INFORMATION
+# =========================================================
+
+print("\nFINAL DATASET INFO")
+print(df.info())
+
+print("\nFINAL DATASET SHAPE")
+print(df.shape)
+
+# =========================================================
+# STEP 14 : DISPLAY FINAL DATASET
+# =========================================================
+
+print("\nFINAL DATASET")
+print(df.head())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =========================================================
+# ASSIGNMENT 2 : DATA WRANGLING II
+# USING SYNTHETIC / SELF-CREATED DATASET
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# =========================================================
+# STEP 2 : CREATE SYNTHETIC ACADEMIC DATASET
+# =========================================================
+
+# Synthetic means manually created dataset
+
+data = {
+
+    'Student_ID': [
+        101,102,103,104,105,
+        106,107,108,109,110
+    ],
+
+    'Gender': [
+        'Male','Female','Male','Female','Male',
+        'Female','Male','Female','Male','Female'
+    ],
+
+    'Maths': [
+        85,78,np.nan,92,56,
+        89,45,76,88,500
+    ],
+
+    'Science': [
+        90,67,78,95,45,
+        np.nan,56,80,91,98
+    ],
+
+    'English': [
+        88,79,70,96,60,
+        84,50,np.nan,86,97
+    ],
+
+    'Attendance': [
+        95,88,76,98,65,
+        92,70,85,np.nan,99
+    ],
+
+    'Study_Hours': [
+        5,4,3,6,2,
+        5,1,4,5,15
+    ],
+
+    'Result': [
+        'Pass','Pass','Pass','Pass','Fail',
+        'Pass','Fail','Pass','Pass','Pass'
+    ]
+}
+
+# Create DataFrame
+
+df = pd.DataFrame(data)
+
+# =========================================================
+# STEP 3 : DISPLAY DATASET
+# =========================================================
+
+print("\nFIRST 5 ROWS")
+print(df.head())
+
+print("\nDATASET INFO")
+print(df.info())
+
+print("\nSHAPE OF DATASET")
+print(df.shape)
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 4 : CHECK DUPLICATES
+# =========================================================
+
+print("\nDUPLICATE ROWS")
+print(df.duplicated().sum())
+
+# Remove duplicates
+
+df = df.drop_duplicates().reset_index(drop=True)
+
+# =========================================================
+# STEP 5 : CHECK MISSING VALUES
+# =========================================================
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 6 : REMOVE ID COLUMNS
+# =========================================================
+
+# Remove columns containing 'id'
+
+for col in df.columns:
+
+    if 'id' in col.lower():
+
+        df.drop(col, axis=1, inplace=True)
+
+# =========================================================
+# STEP 7 : HANDLE MISSING VALUES
+# =========================================================
+
+# LOGIC:
+# -----------------------------------------
+# Continuous numeric -> MEAN
+# Binary/Text -> MODE
+# -----------------------------------------
+
+for col in df.columns:
+
+    # Numeric column
+
+    if df[col].dtype != 'object':
+
+        unique_values = df[col].nunique()
+
+        # Binary/categorical-like numeric
+
+        if unique_values <= 2:
+
+            df[col] = df[col].fillna(
+                df[col].mode()[0]
+            )
+
+        # Continuous numeric
+
+        else:
+
+            df[col] = df[col].fillna(
+                df[col].mean()
+            )
+
+    # Text column
+
+    else:
+
+        df[col] = df[col].fillna(
+            df[col].mode()[0]
+        )
+
+print("\nMISSING VALUES AFTER HANDLING")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 8 : SELECT NUMERIC COLUMNS
+# =========================================================
+
+# Skip binary columns for outlier detection
+
+num_cols = []
+
+for col in df.select_dtypes(include=np.number).columns:
+
+    if df[col].nunique() > 2:
+
+        num_cols.append(col)
+
+print("\nNUMERIC COLUMNS")
+print(num_cols)
+
+# =========================================================
+# STEP 9 : OUTLIER DETECTION USING IQR
+# =========================================================
+
+for col in num_cols:
+
+    print(f"\nPROCESSING COLUMN : {col}")
+
+    Q1 = df[col].quantile(0.25)
+
+    Q3 = df[col].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lower_limit = Q1 - 1.5 * IQR
+
+    upper_limit = Q3 + 1.5 * IQR
+
+    print("Q1 =", Q1)
+    print("Q3 =", Q3)
+    print("IQR =", IQR)
+
+    print("LOWER LIMIT =", lower_limit)
+    print("UPPER LIMIT =", upper_limit)
+
+    outliers = df[
+        (df[col] < lower_limit) |
+        (df[col] > upper_limit)
+    ]
+
+    print("TOTAL OUTLIERS =", len(outliers))
+
+# =========================================================
+# STEP 10 : BOXPLOTS
+# =========================================================
+
+for col in num_cols:
+
+    plt.figure(figsize=(6,4))
+
+    sns.boxplot(y=df[col])
+
+    plt.title(f"Boxplot of {col}")
+
+    plt.show()
+
+# =========================================================
+# STEP 11 : REMOVE OUTLIERS
+# =========================================================
+
+for col in num_cols:
+
+    Q1 = df[col].quantile(0.25)
+
+    Q3 = df[col].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lower_limit = Q1 - 1.5 * IQR
+
+    upper_limit = Q3 + 1.5 * IQR
+
+    df = df[
+        (df[col] >= lower_limit) &
+        (df[col] <= upper_limit)
+    ]
+
+print("\nSHAPE AFTER OUTLIER REMOVAL")
+print(df.shape)
+
+# =========================================================
+# STEP 12 : TRANSFORMATION
+# =========================================================
+
+transform_cols = num_cols
+
+for col in transform_cols:
+
+    if (df[col] >= 0).all():
+
+        # BEFORE TRANSFORMATION
+
+        plt.figure(figsize=(6,4))
+
+        plt.hist(df[col], bins=20)
+
+        plt.title(f"BEFORE Transformation : {col}")
+
+        plt.show()
+
+        # LOG TRANSFORMATION
+
+        df[col] = np.log1p(df[col])
+
+        # AFTER TRANSFORMATION
+
+        plt.figure(figsize=(6,4))
+
+        plt.hist(df[col], bins=20)
+
+        plt.title(f"AFTER Log Transformation : {col}")
+
+        plt.show()
+
+# =========================================================
+# STEP 13 : FINAL INFORMATION
+# =========================================================
+
+print("\nFINAL DATASET INFO")
+print(df.info())
+
+print("\nFINAL DATASET SHAPE")
+print(df.shape)
+
+print("\nFINAL DATASET")
+print(df.head())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

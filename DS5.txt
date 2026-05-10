@@ -1,0 +1,347 @@
+df.drop('PassengerId', axis=1, inplace=True)
+df.duplicated().sum()
+df.drop_duplicates().reset_index(drop=True)
+# =========================================================
+# ASSIGNMENT 5 : LOGISTIC REGRESSION
+# FINAL MASTER PRACTICAL CODE
+# =========================================================
+
+# =========================================================
+# STEP 1 : IMPORT REQUIRED LIBRARIES
+# =========================================================
+
+# pandas -> dataset handling
+import pandas as pd
+
+# numpy -> numerical operations
+import numpy as np
+
+# visualization libraries
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# train_test_split -> divides dataset
+from sklearn.model_selection import train_test_split
+
+# Logistic Regression model
+from sklearn.linear_model import LogisticRegression
+
+# evaluation metrics
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+
+# =========================================================
+# STEP 2 : LOAD DATASET
+# =========================================================
+
+# Change filename according to practical exam
+
+df = pd.read_csv("data.csv")
+df
+df.drop('User ID', inplace=True, axis=1)
+
+# =========================================================
+# STEP 3 : DISPLAY BASIC INFORMATION
+# =========================================================
+
+print("\nFIRST 5 ROWS")
+print(df.head())
+
+print("\nDATASET INFO")
+print(df.info())
+
+print("\nDATASET SHAPE")
+print(df.shape)
+
+print("\nCOLUMN NAMES")
+print(df.columns)
+
+# =========================================================
+# STEP 4 : CHECK MISSING VALUES
+# =========================================================
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+# =========================================================
+# STEP 5 : HANDLE MISSING VALUES
+# =========================================================
+
+# Select numeric columns
+
+num_cols = df.select_dtypes(include=np.number).columns
+
+# Fill missing numeric values with mean
+
+for col in num_cols:
+
+    df[col] = df[col].fillna(df[col].mean())
+
+# =========================================================
+# STEP 6 : HANDLE CATEGORICAL COLUMNS
+# =========================================================
+
+# Machine learning models require numeric data
+
+# Convert categorical columns into numeric format
+
+df = pd.get_dummies(df)
+
+# =========================================================
+# STEP 7 : DEFINE TARGET COLUMN
+# =========================================================
+
+# IMPORTANT:
+# Change target column according to dataset
+
+# Examples:
+# Purchased
+# Survived
+# Outcome
+# Pass
+
+target = "Purchased"
+
+# =========================================================
+# STEP 8 : SEPARATE FEATURES AND TARGET
+# =========================================================
+
+X = df.drop(target, axis=1)
+
+y = df[target]
+
+# =========================================================
+# STEP 9 : VISUALIZATION SECTION
+# =========================================================
+
+# ---------------------------------------------------------
+# VISUALIZATION 1 : TARGET CLASS COUNT
+# ---------------------------------------------------------
+
+# Shows distribution of classes
+
+plt.figure(figsize=(6,4))
+
+sns.countplot(x=y)
+
+plt.title("Target Class Distribution")
+
+plt.show()
+
+# ---------------------------------------------------------
+# VISUALIZATION 2 : CORRELATION HEATMAP
+# ---------------------------------------------------------
+
+plt.figure(figsize=(10,8))
+
+sns.heatmap(df.corr(), annot=True)
+
+plt.title("Correlation Heatmap")
+
+plt.show()
+
+# ---------------------------------------------------------
+# VISUALIZATION 3 : SCATTER PLOT
+# ---------------------------------------------------------
+
+# Select first feature automatically
+
+feature_col = X.columns[0]
+
+plt.figure(figsize=(6,4))
+
+plt.scatter(df[feature_col], y)
+
+plt.xlabel(feature_col)
+
+plt.ylabel(target)
+
+plt.title(f"{feature_col} vs {target}")
+
+plt.show()
+
+# =========================================================
+# STEP 10 : TRAIN TEST SPLIT
+# =========================================================
+
+# 80% training
+# 20% testing
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+# =========================================================
+# STEP 11 : CREATE LOGISTIC REGRESSION MODEL
+# =========================================================
+
+# max_iter increased to avoid convergence warning
+
+model = LogisticRegression(max_iter=1000)
+
+# =========================================================
+# STEP 12 : TRAIN MODEL
+# =========================================================
+
+model.fit(X_train, y_train)
+
+# =========================================================
+# STEP 13 : MAKE PREDICTIONS
+# =========================================================
+
+y_pred = model.predict(X_test)
+
+# =========================================================
+# STEP 14 : ACTUAL VS PREDICTED VALUES
+# =========================================================
+
+comparison = pd.DataFrame({
+    "Actual": y_test,
+    "Predicted": y_pred
+})
+
+print("\nACTUAL VS PREDICTED")
+print(comparison.head())
+
+# =========================================================
+# STEP 15 : CONFUSION MATRIX
+# =========================================================
+
+cm = confusion_matrix(y_test, y_pred)
+
+print("\nCONFUSION MATRIX")
+print(cm)
+
+# =========================================================
+# STEP 16 : VISUALIZE CONFUSION MATRIX
+# =========================================================
+
+plt.figure(figsize=(6,4))
+
+sns.heatmap(cm, annot=True, fmt='d')
+
+plt.title("Confusion Matrix")
+
+plt.xlabel("Predicted")
+
+plt.ylabel("Actual")
+
+plt.show()
+
+# =========================================================
+# STEP 17 : CALCULATE ACCURACY
+# =========================================================
+
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\nACCURACY")
+print(accuracy)
+
+# =========================================================
+# STEP 18 : CLASSIFICATION REPORT
+# =========================================================
+
+# Gives:
+# precision
+# recall
+# f1-score
+
+print("\nCLASSIFICATION REPORT")
+print(classification_report(y_test, y_pred))
+
+# =========================================================
+# STEP 19 : MANUAL TP TN FP FN CALCULATION
+# =========================================================
+
+# Confusion matrix format:
+# [[TN FP]
+#  [FN TP]]
+
+TP = cm[1][1]
+TN = cm[0][0]
+FP = cm[0][1]
+FN = cm[1][0]
+
+print("\nTRUE POSITIVE =", TP)
+print("TRUE NEGATIVE =", TN)
+print("FALSE POSITIVE =", FP)
+print("FALSE NEGATIVE =", FN)
+
+# =========================================================
+# STEP 20 : MANUAL METRIC CALCULATIONS
+# =========================================================
+
+# ---------------------------------------------------------
+# ACCURACY
+# ---------------------------------------------------------
+
+accuracy_manual = (TP + TN) / (TP + TN + FP + FN)
+
+print("\nMANUAL ACCURACY")
+print(accuracy_manual)
+
+# ---------------------------------------------------------
+# PRECISION
+# ---------------------------------------------------------
+
+# Precision tells:
+# Out of predicted positives,
+# how many were actually positive
+
+precision = TP / (TP + FP)
+
+print("\nPRECISION")
+print(precision)
+
+# ---------------------------------------------------------
+# RECALL
+# ---------------------------------------------------------
+
+# Recall tells:
+# Out of actual positives,
+# how many correctly predicted
+
+recall = TP / (TP + FN)
+
+print("\nRECALL")
+print(recall)
+
+# =========================================================
+# STEP 21 : USER INPUT PREDICTION
+# =========================================================
+
+print("\nENTER VALUES FOR PREDICTION")
+
+user_data = []
+
+for col in X.columns:
+
+    value = float(input(f"Enter value for {col}: "))
+
+    user_data.append(value)
+
+# Convert into DataFrame
+
+user_df = pd.DataFrame([user_data], columns=X.columns)
+
+# =========================================================
+# STEP 22 : PREDICT USER INPUT
+# =========================================================
+
+prediction = model.predict(user_df)
+
+print("\nPREDICTED CLASS")
+
+# Output meaning
+
+if prediction[0] == 1:
+
+    print("Positive Class / YES / TRUE")
+
+else:
+
+    print("Negative Class / NO / FALSE")
