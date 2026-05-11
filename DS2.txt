@@ -68,7 +68,7 @@ for col in df.columns:
     # CHECK IF COLUMN IS NUMERIC
     # -----------------------------------------------------
 
-    if df[col].dtype != 'object':
+    if pd.api.types.is_numeric_dtype(df[col]):
 
         # Count unique values
 
